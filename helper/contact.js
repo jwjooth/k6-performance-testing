@@ -29,11 +29,12 @@ export function createToken(request) {
 
     const loginSuccess = check(res, {
         "login status is 200": (val) => val.status === 200,
-        "login token exists": (val) => val.json("data.token") != null,
+        "login token exists": (val) =>
+            val.status === 200 && val.json("data.token") != null,
     });
 
     if (!loginSuccess) {
-        fail(`Login failed: ${res.status} ${res.body}`);
+        fail(`Login failed: ${res.status} ${res.body || res.error || ""}`);
     }
 
     return res;

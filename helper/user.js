@@ -2,19 +2,20 @@ import {check, fail} from "k6";
 import http from "k6/http";
 
 export function createUser(request) {
-    const res = http.post("http://localhost:3000/api/users/login", JSON.stringify(request), {
+    const res = http.post("http://localhost:3000/api/users", JSON.stringify(request), {
         headers: {
             Accept: "application/json", "Content-Type": "application/json",
         },
     });
 
-    const checkLogin = check(res, {
-        "login response status must 200": (val) => val.status === 200,
-        "login response token must exists": (val) => val.json().data.token !== null,
+    const checkRegistration = check(res, {
+        "registration response status must 200": (val) => val.status === 200,
+        "registration response username must match": (val) =>
+            val.status === 200 && val.json("data.username") === request.username,
     });
 
-    if (checkLogin) {
-        fail(res.error);
+    if (!checkRegistration) {
+        fail(`failed when trying to create user: ${res.status} ${res.body || res.error || ""}`);
     }
 
     return res;
@@ -29,10 +30,11 @@ export function getCurrentUser(responseBody) {
 
     const checkCurrent = check(currentResponse, {
         "current response status must 200": (val) => val.status === 200,
-        "current response data must not null": (val) => val.json().data !== null,
+        "current response data must not null": (val) =>
+            val.status === 200 && val.json("data") !== null,
     });
 
-    if (checkCurrent) {
+    if (!checkCurrent) {
         fail(currentResponse.error);
     }
 
