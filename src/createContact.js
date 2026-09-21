@@ -1,6 +1,7 @@
 import {check, fail} from "k6";
 import http from "k6/http";
 import {createContact, createToken} from "../helper/contact.js";
+import execution from "k6/execution";
 
 export const options = {
     vus: 10,
@@ -9,8 +10,9 @@ export const options = {
 
 export function setup() {
     const data = [];
+    const totalContacts = Number(__ENV.TOTAL_CONTACT) || 10
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < totalContacts; i++) {
         data.push({
             first_name: "contact",
             last_name: `ke-${i}`,
@@ -22,8 +24,9 @@ export function setup() {
 }
 
 export function getToken() {
+    const username = `contoh${execution.vu.idInInstance}`
     const request = {
-        username: "contact",
+        username: username,
         password: "rahasia",
     };
 
